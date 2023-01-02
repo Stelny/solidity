@@ -4,31 +4,41 @@ pragma solidity ^0.8.9;
 // Uncomment this line to use console.log
 // import "hardhat/console.sol";
 
-contract Lock {
-    uint public unlockTime;
-    address payable public owner;
+contract SimpleStorage {
+	uint256 favoriteNumber;
 
-    event Withdrawal(uint amount, uint when);
+	struct People {
+		uint256 favoriteNumber;
+		string name;
+	}
 
-    constructor(uint _unlockTime) payable {
-        require(
-            block.timestamp < _unlockTime,
-            "Unlock time should be in the future"
-        );
+	People[] public people;
 
-        unlockTime = _unlockTime;
-        owner = payable(msg.sender);
-    }
+	mapping(string => uint256) public nameToFavoriteNumber;
 
-    function withdraw() public {
-        // Uncomment this line, and the import of "hardhat/console.sol", to print a log in your terminal
-        // console.log("Unlock time is %o and block timestamp is %o", unlockTime, block.timestamp);
+	function store(uint256 _favoriteNumber) public {
+		favoriteNumber = _favoriteNumber;
+	}
 
-        require(block.timestamp >= unlockTime, "You can't withdraw yet");
-        require(msg.sender == owner, "You aren't the owner");
+	function retrieve() public view returns (uint256) {
+		return favoriteNumber;
+	}
 
-        emit Withdrawal(address(this).balance, block.timestamp);
+	function addPerson(string memory _name, uint256 _favoriteNumber) public {
+		people.push(People(_favoriteNumber, _name));
+		nameToFavoriteNumber[_name] = _favoriteNumber;
+	}
 
-        owner.transfer(address(this).balance);
-    }
+	function getPersonList(string memory _name) public view returns (uint256) {
+		for (uint i = 0; i < people.length; i++) {
+			if ((keccak256(abi.encodePacked(people[i].name))) == (keccak256(abi.encodePacked(_name)))) {
+				return people[i].favoriteNumber;
+			}
+		} 
+		return 0;
+	}
+
+	function getPersonMap(string memory _name) public view returns (uint256) {
+		return nameToFavoriteNumber[_name];
+	} 
 }
